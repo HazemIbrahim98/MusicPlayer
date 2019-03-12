@@ -3,42 +3,27 @@ package com.example.pleasework;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.graphics.Movie;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.ListView;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    ArrayList<String> arrayList;
-
-
-    //ListView listView;
-    //ArrayAdapter<String> adapter;
-
 
     RecyclerView recyclerView;
     songAdapter adapter;
-    private List<Song> songlist = new ArrayList<>();
+    private List<Song> songList = new ArrayList<>();
 
-    //public Song song;
-    //public boolean firstTime = true;
     MediaPlayer player = new MediaPlayer();
 
     @Override
@@ -76,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    player.seekTo(Duration);
                     player.start();
                 } else if (player.isPlaying())
                     player.pause();
@@ -86,17 +70,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void doStuff() {
-//        listView = findViewById(R.id.listView);
         recyclerView = findViewById(R.id.myView);
-        adapter = new songAdapter(songlist);
-        //arrayList = new ArrayList<>();
+        adapter = new songAdapter(songList);
         getMusic();
-        //adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, arrayList);
-        //listView.setAdapter(adapter);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(mLayoutManager);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(adapter);
+
+        recyclerView.addOnItemTouchListener(new songRecyclerClickListener(getApplicationContext(), recyclerView, new songRecyclerClickListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Song song = songList.get(position);
+                player = new MediaPlayer();
+                try {
+                    player.setDataSource(song.getLoc());
+                    player.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                player.start();
+
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
+
     }
 
     public void getMusic() {
@@ -113,10 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 temp.setName(songCursor.getString(songTitle));
                 temp.setArtist(songCursor.getString(songArtist));
                 temp.setLoc(songCursor.getString(songLocation));
-
-                songlist.add(temp);
-
-                //arrayList.add(currentTitle + "\n" + currentArtist + "\n" + currentLocation);
+                songList.add(temp);
             } while (songCursor.moveToNext());
         }
         adapter.notifyDataSetChanged();

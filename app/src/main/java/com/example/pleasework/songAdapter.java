@@ -11,7 +11,7 @@ import java.util.List;
 
 public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> {
 
-    private List<Song> songlist;
+    private List<Song> songList;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, artist;
@@ -23,8 +23,8 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
         }
     }
 
-    public songAdapter(List<Song> songlist) {
-        this.songlist = songlist;
+    public songAdapter(List<Song> songList) {
+        this.songList = songList;
     }
 
     @NonNull
@@ -38,13 +38,13 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull songAdapter.MyViewHolder myViewHolder, int i) {
-        Song song = songlist.get(i);
+        Song song = songList.get(i);
         myViewHolder.title.setText(song.getName());
         myViewHolder.artist.setText(song.getArtist());
     }
 
     @Override
     public int getItemCount() {
-        return songlist.size();
+        return songList.size();
     }
 }
