@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -15,11 +16,13 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, artist;
+        public ImageView image;
 
         public MyViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.title);
             artist = view.findViewById(R.id.artist);
+            image = view.findViewById(R.id.image);
         }
     }
 
@@ -41,6 +44,7 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
         Song song = songList.get(i);
         myViewHolder.title.setText(song.getName());
         myViewHolder.artist.setText(song.getArtist());
+        myViewHolder.image.setImageURI(song.getAlbumArt());
     }
 
     @Override

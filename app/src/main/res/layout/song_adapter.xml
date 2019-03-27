@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground"
@@ -18,19 +20,32 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="0dp"
-        android:text="title" />
+        android:layout_marginStart="91dp"
+        android:layout_marginTop="17dp"
+        android:text="title"
+        android:textColor="#ffff"/>
 
     <TextView
         android:id="@+id/artist"
         android:layout_width="wrap_content"
         android:layout_height="15dp"
-        android:layout_below="@+id/title"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="13dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="92dp"
+        android:layout_marginTop="51dp"
         android:layout_marginEnd="8dp"
-        android:text="Artist" />
+        android:text="Artist"
+        android:textColor="#ffff"/>
 
-    </RelativeLayout>
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="59dp"
+        android:layout_height="64dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="14dp"
+        tools:srcCompat="@tools:sample/backgrounds/scenic"
+        android:textColor="#ffff"/>
+
+</RelativeLayout>

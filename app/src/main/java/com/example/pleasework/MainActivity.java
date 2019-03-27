@@ -13,6 +13,9 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,16 +24,22 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
+    TextView TextViewSongName;
     songAdapter adapter;
+    ImageButton PlayPauseSong;
+    RelativeLayout rel;
     private List<Song> songList = new ArrayList<>();
-
+    public int pos;
+    View BottomView;
     MediaPlayer player = new MediaPlayer();
+    ImageButton PrevButton;
+    ImageButton NextButton;
+    int index;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         //a better way to check for permissions
         //you need to check if you have the permission or not first then ask for them.
         //put the string in resources?
@@ -38,35 +47,67 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
         };
-
         requestPermissions(PERMISSIONS, 1);
-        doStuff();
-/*
-        //if i understand correctly this need to be a new service so that
-        // it plays when app is minimized or in the notification bar
-        ImageButton playPause = findViewById(R.id.playPauseButton);
-        playPause.setOnClickListener(new View.OnClickListener() {
+
+
+        TextViewSongName = findViewById(R.id.TextViewSongName);
+        PrevButton = findViewById(R.id.prevSong);
+        PrevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Song song = new Song();
-                song.setLoc(Environment.getExternalStorageDirectory() + "/test.mp3");
+                player.stop();
+                if (--index == -1)
+                    index = songList.size()-1;
+                Song song = songList.get(index);
+                TextViewSongName.setText(song.getName() + "\n" + song.getArtist());
 
-
-                if (firstTime) {
-                    firstTime = false;
-                    player = new MediaPlayer();
-                    try {
-                        player.setDataSource(song.getLoc());
-                        player.prepare();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    player.start();
-                } else if (player.isPlaying())
-                    player.pause();
-                else player.start();
+                player = new MediaPlayer();
+                try {
+                    player.setDataSource(song.getLoc());
+                    player.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                player.start();
             }
-        });*/
+        });
+        NextButton = findViewById(R.id.nextSong);
+        NextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                player.stop();
+                if (++index == songList.size())
+                    index = 0;
+                Song song = songList.get(index);
+                TextViewSongName.setText(song.getName() + "\n" + song.getArtist());
+
+                player = new MediaPlayer();
+                try {
+                    player.setDataSource(song.getLoc());
+                    player.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                player.start();
+            }
+        });
+
+        //Play Pause Button
+        PlayPauseSong = findViewById(R.id.playPauseSong);
+        PlayPauseSong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player.isPlaying())
+                    player.pause();
+                else
+                    player.start();
+            }
+        });
+
+
+        //if i understand correctly this need to be a new service so that
+        // it plays when app is minimized or in the notification bar
+        doStuff();
     }
 
     public void doStuff() {
@@ -82,7 +123,11 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addOnItemTouchListener(new songRecyclerClickListener(getApplicationContext(), recyclerView, new songRecyclerClickListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
+                index = position;
                 Song song = songList.get(position);
+                TextViewSongName.setText(song.getName() + "\n" + song.getArtist());
+
+                player.stop();
                 player = new MediaPlayer();
                 try {
                     player.setDataSource(song.getLoc());
@@ -91,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 player.start();
-
             }
 
             @Override
@@ -111,11 +155,13 @@ public class MainActivity extends AppCompatActivity {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int songLocation = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            int songIcon = songCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART);
             do {
                 Song temp = new Song();
                 temp.setName(songCursor.getString(songTitle));
                 temp.setArtist(songCursor.getString(songArtist));
                 temp.setLoc(songCursor.getString(songLocation));
+                //temp.setAlbumArt(songCursor.getString(songIcon));
                 songList.add(temp);
             } while (songCursor.moveToNext());
         }
