@@ -1,5 +1,8 @@
 package com.example.pleasework;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -44,7 +47,11 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
         Song song = songList.get(i);
         myViewHolder.title.setText(song.getName());
         myViewHolder.artist.setText(song.getArtist());
-        myViewHolder.image.setImageURI(song.getAlbumArt());
+
+        //Trials to get the image to work
+        //myViewHolder.image.setImageURI(Uri.parse(song.getAlbumArtLocation()));
+        //myViewHolder.image.setImageBitmap(song.getBitmap());
+        //myViewHolder.image.setImageURI(Uri.parse(song.getLocation()));
     }
 
     @Override

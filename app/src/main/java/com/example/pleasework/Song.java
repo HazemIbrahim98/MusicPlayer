@@ -1,28 +1,28 @@
 package com.example.pleasework;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
-
-import java.net.URI;
 
 public class Song {
     private String name;
     private String genre;
-    private String loc;
-    private int duration;
+    private String location;
     private String artist;
-    private Uri albumArt;
+    private Uri albumArtUri;
+    private Bitmap bitmap;
+    private String albumArtLocation;
 
 
     //Constructors
     public Song() {
-        name = "Wanabe";
-        loc = null;
-        genre = "Jazz";
+        this.name = "Not Scanned";
+        this.location = null;
+        this.genre = "Not Scanned";
     }
 
-    public Song(String _name, String _loc, String _genre, int _sec, int _min, int _hr) {
+    public Song(String _name, String _loc, String _genre) {
         this.name = _name;
-        this.loc = _loc;
+        this.location = _loc;
         this.genre = _genre;
     }
 
@@ -43,12 +43,12 @@ public class Song {
         this.genre = genre;
     }
 
-    public String getLoc() {
-        return loc;
+    public String getLocation() {
+        return location;
     }
 
-    public void setLoc(String location) {
-        this.loc = location;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getArtist() {
@@ -59,19 +59,27 @@ public class Song {
         this.artist = artist;
     }
 
-    public int getDuration() {
-        return duration;
+    public Uri getAlbumArtUri() {
+        return albumArtUri;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setAlbumArtUri(Uri albumArt) {
+        this.albumArtUri = albumArt;
     }
 
-    public Uri getAlbumArt() {
-        return albumArt;
+    public Bitmap getBitmap() {
+        return bitmap;
     }
 
-    public void setAlbumArt(Uri albumArt) {
-        this.albumArt = albumArt;
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public String getAlbumArtLocation() {
+        return albumArtLocation;
+    }
+
+    public void setAlbumArtLocation(String albumArtLocation) {
+        this.albumArtLocation = albumArtLocation;
     }
 }
