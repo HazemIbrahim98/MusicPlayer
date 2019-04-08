@@ -12,6 +12,15 @@ public class Song {
     private Bitmap bitmap;
     private String albumArtLocation;
 
+    public float getDuration() {
+        return duration;
+    }
+
+    public void setDuration(float duration) {
+        this.duration = duration;
+    }
+
+    private float duration;
 
     //Constructors
     public Song() {

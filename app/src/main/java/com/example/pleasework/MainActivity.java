@@ -3,8 +3,6 @@ package com.example.pleasework;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -16,81 +14,159 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView; //Recycler View Stuff
     songAdapter adapter;
-
-    TextView TextViewSongName; //Text at the bottom
-
     private List<Song> songList = new ArrayList<>(); //Library
-
-    ImageButton PlayPauseSong; //Next - Prev - Play buttons
-    ImageButton PrevButton;
-    ImageButton NextButton;
-    int index;
-
-    //if i understand correctly this need to be a new service so that
-    // it plays when app is minimized or in the notification bar
     MediaPlayer player = new MediaPlayer(); //Main Music Player
+    int index;
+    int length;
+    SeekBar seekBar;
+
+
+    ImageButton play, pause, play_main, pause_main,playNext,playPrev;
+    private SlidingUpPanelLayout mLayout;
+    TextView songs_title;
+    TextView songs_artist_name;
+    TextView startTime , endTime;
+
+    Thread thread = new Thread() {
+
+        @Override
+        public void run() {
+            try {
+                while (!thread.isInterrupted()) {
+                    Thread.sleep(10);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            long seconds = TimeUnit.MILLISECONDS.toSeconds(player.getCurrentPosition());
+                            long mins =TimeUnit.MILLISECONDS.toMinutes(player.getCurrentPosition());
+                            for(int i = 0 ;i<mins;i++)
+                                seconds-= 60;
+
+                            startTime.setText(mins +":" + seconds);
+                        }
+                    });
+                }
+            } catch (InterruptedException e) {
+            }
+        }
+    };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //a better way to check for permissions
-        //you need to check if you have the permission or not first then ask for them.
-        //put the string in resources?
+
+        play = findViewById(R.id.play_button);
+        pause = findViewById(R.id.pause_button);
+        play_main = findViewById(R.id.play_button_main);
+        pause_main = findViewById(R.id.pause_button_main);
+        playPrev=findViewById(R.id.PlayPrev);
+        playNext = findViewById(R.id.PlayNext);
+        seekBar = findViewById(R.id.seekBar);
+        endTime = findViewById(R.id.endTime);
+        startTime = findViewById(R.id.StartTime);
+
         String[] PERMISSIONS = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
         };
         requestPermissions(PERMISSIONS, 1);
 
+        thread.start();
 
         Initialize();
 
-        //Play Next Song Listener
-        NextButton = findViewById(R.id.nextSong);
-        NextButton.setOnClickListener(new View.OnClickListener() {
+        mLayout = findViewById(R.id.activity_main);
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                playSong(index);
+            }
+        });
+
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            pauseSong();
+            }
+        });
+
+        play_main.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                playSong(index);
+            }
+        });
+
+        pause_main.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pauseSong();
+            }
+        });
+        playNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playNextSong();
             }
         });
-
-        //Play Prev Song Listener
-        PrevButton = findViewById(R.id.prevSong);
-        PrevButton.setOnClickListener(new View.OnClickListener() {
+        playPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playPrevSong();
             }
         });
 
-        //Play Pause Button
-        PlayPauseSong = findViewById(R.id.playPauseSong);
-        PlayPauseSong.setOnClickListener(new View.OnClickListener() {
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onClick(View v) {
-                if (player.isPlaying())
-                    player.pause();
-                else
-                    player.start();
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                player.seekTo(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mLayout != null &&
+                (mLayout.getPanelState() == PanelState.EXPANDED || mLayout.getPanelState() == PanelState.ANCHORED)) {
+            mLayout.setPanelState(PanelState.COLLAPSED);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     public void Initialize() {
-
-        TextViewSongName = findViewById(R.id.TextViewSongName); //For the bottom song title
-
-        recyclerView = findViewById(R.id.myView);
+        songs_title = findViewById(R.id.songs_title); //For the bottom song title
+        songs_artist_name = findViewById(R.id.songs_artist_name);
+        recyclerView = findViewById(R.id.SongRView);
         adapter = new songAdapter(songList);
 
         getMusic();//Build Song Library
@@ -108,16 +184,37 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onLongClick(View view, int position) {
-
             }
         }));
     }
 
-    public void playSong(int position) {
-        index = position;
-        Song song = songList.get(position);
-        TextViewSongName.setText(song.getName() + "\n" + song.getArtist());
+    public void pauseSong(){
 
+        pause_main.setVisibility(View.GONE);
+        play_main.setVisibility(View.VISIBLE);
+        if (pause.getVisibility() == View.VISIBLE) {
+            pause.setVisibility(View.GONE);
+            play.setVisibility(View.VISIBLE);
+        }
+        length = player.getCurrentPosition();
+        player.pause();
+    }
+
+    public void playSong(int position) {
+
+        play.setVisibility(View.GONE);
+        pause.setVisibility(View.VISIBLE);
+        if (play_main.getVisibility() == View.VISIBLE) {
+            play_main.setVisibility(View.GONE);
+            pause_main.setVisibility(View.VISIBLE);
+        }
+        if (index != position) {
+            index = position;
+            length = 0;
+        }
+        Song song = songList.get(position);
+        songs_title.setText(song.getName());
+        songs_artist_name.setText(song.getArtist());
         player.stop();
         player = new MediaPlayer();
         try {
@@ -126,6 +223,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        player.seekTo(length);
+        seekBar.setProgress(0);
+        endTime.setText((int)(song.getDuration()/60000 )+":" + (int)((song.getDuration()/60000 - (int)song.getDuration()/60000) * 60));
+        seekBar.setMax((int)song.getDuration());
         player.start();
     }
 
@@ -134,35 +235,14 @@ public class MainActivity extends AppCompatActivity {
         player.stop();
         if (++index == songList.size())
             index = 0;
-        Song song = songList.get(index);
-        TextViewSongName.setText(song.getName() + "\n" + song.getArtist());
-
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(song.getLocation());
-            player.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        player.start();
+        playSong(index);
     }
 
     public void playPrevSong() {
         player.stop();
         if (--index == -1)
             index = songList.size() - 1;
-        Song song = songList.get(index);
-        TextViewSongName.setText(song.getName() + "\n" + song.getArtist());
-
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(song.getLocation());
-            player.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        player.start();
-
+        playSong(index);
     }
 
     public void getMusic() {
@@ -174,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int songLocation = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            int songDuration = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
             //int x = songCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART);
             //String thisArt = songCursor.getString(x);
 
@@ -182,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                 temp.setName(songCursor.getString(songTitle));
                 temp.setArtist(songCursor.getString(songArtist));
                 temp.setLocation(songCursor.getString(songLocation));
-
+                temp.setDuration(songCursor.getFloat(songDuration));
                 //Trials to get the image to work....
                 //temp.setAlbumArtLocation(songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
                 //temp.setBitmap(BitmapFactory.decodeFile(thisArt));
