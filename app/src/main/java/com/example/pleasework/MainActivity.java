@@ -3,7 +3,6 @@ package com.example.pleasework;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -16,11 +15,8 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -30,58 +26,18 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView; //Recycler View Stuff
     songAdapter adapter;
     private List<Song> songList = new ArrayList<>(); //Library
-    MediaPlayer player = new MediaPlayer(); //Main Music Player
-    int index;
-    int length;
+
+    MainPlayer Player;  //Media Player Class
     SeekBar seekBar;
 
-
-    ImageButton play, pause, play_main, pause_main,playNext,playPrev;
-    private SlidingUpPanelLayout mLayout;
-    TextView songs_title;
-    TextView songs_artist_name;
-    TextView startTime , endTime;
-
-    Thread thread = new Thread() {
-
-        @Override
-        public void run() {
-            try {
-                while (!thread.isInterrupted()) {
-                    Thread.sleep(10);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            long seconds = TimeUnit.MILLISECONDS.toSeconds(player.getCurrentPosition());
-                            long mins =TimeUnit.MILLISECONDS.toMinutes(player.getCurrentPosition());
-                            for(int i = 0 ;i<mins;i++)
-                                seconds-= 60;
-
-                            startTime.setText(mins +":" + seconds);
-                        }
-                    });
-                }
-            } catch (InterruptedException e) {
-            }
-        }
-    };
-
-
+    ImageButton play, pause, play_main, pause_main, playNext, playPrev; //UI stuff
+    TextView songs_title, songs_artist_name, startTime, endTime;
+    SlidingUpPanelLayout mLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        play = findViewById(R.id.play_button);
-        pause = findViewById(R.id.pause_button);
-        play_main = findViewById(R.id.play_button_main);
-        pause_main = findViewById(R.id.pause_button_main);
-        playPrev=findViewById(R.id.PlayPrev);
-        playNext = findViewById(R.id.PlayNext);
-        seekBar = findViewById(R.id.seekBar);
-        endTime = findViewById(R.id.endTime);
-        startTime = findViewById(R.id.StartTime);
 
         String[] PERMISSIONS = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -89,68 +45,68 @@ public class MainActivity extends AppCompatActivity {
         };
         requestPermissions(PERMISSIONS, 1);
 
-        thread.start();
-
         Initialize();
 
-        mLayout = findViewById(R.id.activity_main);
+        //On Click Listiners For all of the Buttons
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                playSong(index);
+                Player.playResumeSong(Player.currentIndex);
+                updateUI();
             }
         });
-
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            pauseSong();
+                Player.pauseSong();
+                updateUI();
             }
         });
-
         play_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                playSong(index);
+                Player.playResumeSong(Player.currentIndex);
+                updateUI();
             }
         });
-
         pause_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pauseSong();
+                Player.pauseSong();
+                updateUI();
             }
         });
         playNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playNextSong();
+                Player.playNextSong();
+                updateUI();
             }
         });
         playPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playPrevSong();
+                Player.playPrevSong();
+                updateUI();
             }
         });
 
+
+        //Seekbar in Sliding UI
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                player.seekTo(progress);
+                //player.seekTo(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
-
     }
 
     @Override
@@ -164,12 +120,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void Initialize() {
-        songs_title = findViewById(R.id.songs_title); //For the bottom song title
+
+        play = findViewById(R.id.play_button);  //Sliding Panel UI BUTTONS
+        pause = findViewById(R.id.pause_button);
+        play_main = findViewById(R.id.play_button_main);
+        pause_main = findViewById(R.id.pause_button_main);
+        playPrev = findViewById(R.id.PlayPrev);
+        playNext = findViewById(R.id.PlayNext);
+        seekBar = findViewById(R.id.seekBar);
+        endTime = findViewById(R.id.endTime);
+        startTime = findViewById(R.id.StartTime);
+        mLayout = findViewById(R.id.activity_main);
+
+        songs_title = findViewById(R.id.songs_title);   //Sliding Panel UI TEXT
         songs_artist_name = findViewById(R.id.songs_artist_name);
-        recyclerView = findViewById(R.id.SongRView);
+        //the URI maybe put here for icons
+
+        recyclerView = findViewById(R.id.SongRView);    //View for songs
         adapter = new songAdapter(songList);
 
-        getMusic();//Build Song Library
+        getMusic(); //Build Song Library
+        Player = new MainPlayer(songList, seekBar);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext())); //Stuff for the recycler view adapter
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -179,70 +150,13 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addOnItemTouchListener(new songRecyclerClickListener(getApplicationContext(), recyclerView, new songRecyclerClickListener.ClickListener() {//Play Clicked On Song
             @Override
             public void onClick(View view, int position) {
-                playSong(position);
+                Player.playResumeSong(position);
+                updateUI();
             }
-
             @Override
             public void onLongClick(View view, int position) {
             }
         }));
-    }
-
-    public void pauseSong(){
-
-        pause_main.setVisibility(View.GONE);
-        play_main.setVisibility(View.VISIBLE);
-        if (pause.getVisibility() == View.VISIBLE) {
-            pause.setVisibility(View.GONE);
-            play.setVisibility(View.VISIBLE);
-        }
-        length = player.getCurrentPosition();
-        player.pause();
-    }
-
-    public void playSong(int position) {
-
-        play.setVisibility(View.GONE);
-        pause.setVisibility(View.VISIBLE);
-        if (play_main.getVisibility() == View.VISIBLE) {
-            play_main.setVisibility(View.GONE);
-            pause_main.setVisibility(View.VISIBLE);
-        }
-        if (index != position) {
-            index = position;
-            length = 0;
-        }
-        Song song = songList.get(position);
-        songs_title.setText(song.getName());
-        songs_artist_name.setText(song.getArtist());
-        player.stop();
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(song.getLocation());
-            player.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        player.seekTo(length);
-        seekBar.setProgress(0);
-        endTime.setText((int)(song.getDuration()/60000 )+":" + (int)((song.getDuration()/60000 - (int)song.getDuration()/60000) * 60));
-        seekBar.setMax((int)song.getDuration());
-        player.start();
-    }
-
-    public void playNextSong() {
-
-        player.stop();
-        if (++index == songList.size())
-            index = 0;
-        playSong(index);
-    }
-
-    public void playPrevSong() {
-        player.stop();
-        if (--index == -1)
-            index = songList.size() - 1;
-        playSong(index);
     }
 
     public void getMusic() {
@@ -273,5 +187,40 @@ public class MainActivity extends AppCompatActivity {
             } while (songCursor.moveToNext());
         }
         adapter.notifyDataSetChanged();
+        songCursor.close();
+    }
+
+    public void updateUI() {
+        updateUIText();
+        updateUIButtons();
+    }
+
+    public void updateUIText() {
+        Song s = songList.get(Player.currentIndex);
+
+        songs_title.setText(s.getName());
+        songs_artist_name.setText(s.getArtist());
+        endTime.setText((int) (s.getDuration() / 60000) + ":" + (int) ((s.getDuration() / 60000 - (int) s.getDuration() / 60000) * 60));
+    }
+
+    public void updateUIButtons() {
+
+        if (Player.Player.isPlaying()) {
+            play.setVisibility(View.GONE);
+            pause.setVisibility(View.VISIBLE);
+            if (play_main.getVisibility() == View.VISIBLE) {
+                play_main.setVisibility(View.GONE);
+                pause_main.setVisibility(View.VISIBLE);
+            }
+
+        } else {
+
+            pause_main.setVisibility(View.GONE);
+            play_main.setVisibility(View.VISIBLE);
+            if (pause.getVisibility() == View.VISIBLE) {
+                pause.setVisibility(View.GONE);
+                play.setVisibility(View.VISIBLE);
+            }
+        }
     }
 }
