@@ -5,59 +5,29 @@ import android.widget.SeekBar;
 import java.io.IOException;
 import java.util.List;
 
-
 /*
 KNOWN BUGS
-
 law 3amel pause w dost 3l recycler same song should restart song
  */
 
 public class MainPlayer {
-    MediaPlayer Player;
+    private MediaPlayer Player;
 
-    List<Song> songList; //Library
-    int currentIndex;
+    private List<Song> songList; //Library
+    private int currentIndex;
+    private SeekBar seekBar;
 
-    SeekBar seekBar;
-
-    public MainPlayer(List<Song> songList , SeekBar seekBar){
-        //gets refrence to time and has thread in it
-        //the thread thingi
+    public MainPlayer(List<Song> songList, SeekBar seekBar) {
 
         Player = new MediaPlayer();
         this.songList = songList;
         this.seekBar = seekBar;
         currentIndex = 0;//should get index of last time app was used
+
     }
 
-    /*
-    Thread thread = new Thread() {
-
-        @Override
-        public void run() {
-            try {
-                while (!thread.isInterrupted()) {
-                    Thread.sleep(10);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            long seconds = TimeUnit.MILLISECONDS.toSeconds(player.getCurrentPosition());
-                            long mins = TimeUnit.MILLISECONDS.toMinutes(player.getCurrentPosition());
-                            for (int i = 0; i < mins; i++)
-                                seconds -= 60;
-
-                            startTime.setText(mins + ":" + seconds);
-                        }
-                    });
-                }
-            } catch (InterruptedException e) {
-            }
-        }
-    };
-*/
-
-    public void pauseSong(){
-        if(Player.isPlaying()) {
+    public void pauseSong() {
+        if (Player.isPlaying()) {
             Player.pause();
         }
     }
@@ -65,11 +35,7 @@ public class MainPlayer {
     public void playResumeSong(int _index) {
         if (Player.isPlaying() == true)//Already Playing a Song
         {
-            play(_index);
-
-//            seekBar.setProgress(0);
-//            seekBar.setMax((int)song.getDuration());
-
+            play(_index);//Play a new Song
         } else {//not playing a song
             if (currentIndex != _index) {//Playing a new song
                 currentIndex = _index;
@@ -91,7 +57,29 @@ public class MainPlayer {
         playResumeSong(currentIndex - 1);
     }
 
-    private void play(int _index){
+    public void seek(int progress) {
+        Player.seekTo(progress);
+    }
+
+    public int getDuration() {
+        return Player.getCurrentPosition();
+    }
+
+    public long getMaxDuration() {
+        return Player.getDuration();
+    }
+
+    public boolean isPlaying() {
+        if (Player.isPlaying())
+            return true;
+        return false;
+    }
+
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
+
+    private void play(int _index) {
 
         Player.stop();
         Player = new MediaPlayer();
@@ -104,6 +92,9 @@ public class MainPlayer {
         }
         Player.start();
         currentIndex = _index;
+
+        seekBar.setProgress(0);
+        seekBar.setMax((int) song.getDuration());
     }
 
 }

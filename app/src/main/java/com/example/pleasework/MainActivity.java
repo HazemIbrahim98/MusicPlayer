@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Player.playResumeSong(Player.currentIndex);
+                Player.playResumeSong(Player.getCurrentIndex());
                 updateUI();
             }
         });
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         play_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Player.playResumeSong(Player.currentIndex);
+                Player.playResumeSong(Player.getCurrentIndex());
                 updateUI();
             }
         });
@@ -96,15 +96,18 @@ public class MainActivity extends AppCompatActivity {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //player.seekTo(progress);
+//                Player.seek(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                Player.seek(seekBar.getProgress());
+
             }
         });
     }
@@ -120,16 +123,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void Initialize() {
-
         play = findViewById(R.id.play_button);  //Sliding Panel UI BUTTONS
         pause = findViewById(R.id.pause_button);
         play_main = findViewById(R.id.play_button_main);
         pause_main = findViewById(R.id.pause_button_main);
         playPrev = findViewById(R.id.PlayPrev);
         playNext = findViewById(R.id.PlayNext);
+
         seekBar = findViewById(R.id.seekBar);
+
         endTime = findViewById(R.id.endTime);
         startTime = findViewById(R.id.StartTime);
+
         mLayout = findViewById(R.id.activity_main);
 
         songs_title = findViewById(R.id.songs_title);   //Sliding Panel UI TEXT
@@ -147,12 +152,15 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(adapter);
 
+        seekBarThread.start();
+
         recyclerView.addOnItemTouchListener(new songRecyclerClickListener(getApplicationContext(), recyclerView, new songRecyclerClickListener.ClickListener() {//Play Clicked On Song
             @Override
             public void onClick(View view, int position) {
                 Player.playResumeSong(position);
                 updateUI();
             }
+
             @Override
             public void onLongClick(View view, int position) {
             }
@@ -177,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
                 temp.setName(songCursor.getString(songTitle));
                 temp.setArtist(songCursor.getString(songArtist));
                 temp.setLocation(songCursor.getString(songLocation));
-                temp.setDuration(songCursor.getFloat(songDuration));
+                temp.setDuration(songCursor.getLong(songDuration));
                 //Trials to get the image to work....
                 //temp.setAlbumArtLocation(songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
                 //temp.setBitmap(BitmapFactory.decodeFile(thisArt));
@@ -196,16 +204,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateUIText() {
-        Song s = songList.get(Player.currentIndex);
+        Song song = songList.get(Player.getCurrentIndex());
 
-        songs_title.setText(s.getName());
-        songs_artist_name.setText(s.getArtist());
-        endTime.setText((int) (s.getDuration() / 60000) + ":" + (int) ((s.getDuration() / 60000 - (int) s.getDuration() / 60000) * 60));
+        songs_title.setText(song.getName());
+        songs_artist_name.setText(song.getArtist());
+
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(song.getDuration());
+        long mins = TimeUnit.MILLISECONDS.toMinutes(song.getDuration());
+        for (int i = 0; i < mins; i++)
+            seconds -= 60;
+
+        if (seconds < 10)
+            endTime.setText(mins + ":0" + seconds);
+        else
+            endTime.setText(mins + ":" + seconds);
     }
 
     public void updateUIButtons() {
 
-        if (Player.Player.isPlaying()) {
+        if (Player.isPlaying()) {
             play.setVisibility(View.GONE);
             pause.setVisibility(View.VISIBLE);
             if (play_main.getVisibility() == View.VISIBLE) {
@@ -223,4 +240,39 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    Thread seekBarThread = new Thread() {
+        @Override
+        public void run() {
+            try {
+                while (!seekBarThread.isInterrupted()) {
+                    Thread.sleep(10);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {//UI of Current Duration
+                            long seconds = TimeUnit.MILLISECONDS.toSeconds(Player.getDuration());
+                            long mins = TimeUnit.MILLISECONDS.toMinutes(Player.getDuration());
+                            for (int i = 0; i < mins; i++)
+                                seconds -= 60;
+
+                            if (seconds < 10)
+                                startTime.setText(mins + ":0" + seconds);
+                            else
+                                startTime.setText(mins + ":" + seconds);
+
+                            //Animate SeekBar
+                            seekBar.setProgress(Player.getDuration());
+
+                            //Play Next Song When Done
+                            if (Player.getDuration() >= Player.getMaxDuration()) {
+                                Player.playNextSong();
+                                updateUI();
+                            }
+                        }
+                    });
+                }
+            } catch (InterruptedException e) {
+            }
+        }
+    };
 }

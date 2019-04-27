@@ -7,15 +7,7 @@ public class Song {
     //private Uri albumArtUri;
     //private Bitmap bitmap;
     //private String albumArtLocation;
-    private float duration;
-
-    public float getDuration() {
-        return duration;
-    }
-
-    public void setDuration(float duration) {
-        this.duration = duration;
-    }
+    private long duration;
 
 
     //Constructors
@@ -54,29 +46,11 @@ public class Song {
         this.artist = artist;
     }
 
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
 }
-    /*
-    public Uri getAlbumArtUri() {
-        return albumArtUri;
-    }
-
-    public void setAlbumArtUri(Uri albumArt) {
-        this.albumArtUri = albumArt;
-    }
-
-    public Bitmap getBitmap() {
-        return bitmap;
-    }
-
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-    }
-
-    public String getAlbumArtLocation() {
-        return albumArtLocation;
-    }
-
-    public void setAlbumArtLocation(String albumArtLocation) {
-        this.albumArtLocation = albumArtLocation;
-    }
-    */
