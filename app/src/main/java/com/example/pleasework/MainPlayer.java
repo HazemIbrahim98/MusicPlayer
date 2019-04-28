@@ -5,11 +5,6 @@ import android.widget.SeekBar;
 import java.io.IOException;
 import java.util.List;
 
-/*
-KNOWN BUGS
-law 3amel pause w dost 3l recycler same song should restart song
- */
-
 public class MainPlayer {
     private MediaPlayer Player;
 
@@ -77,6 +72,10 @@ public class MainPlayer {
 
     public int getCurrentIndex() {
         return currentIndex;
+    }
+
+    public void setSongList(List<Song> songList) {
+        this.songList = songList;
     }
 
     private void play(int _index) {

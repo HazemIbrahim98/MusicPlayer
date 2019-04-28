@@ -1,12 +1,7 @@
 package com.example.pleasework;
 
-public class Person
-{
-    String name ;
-    String UserName ;
-    int age ;
-    String Pass;
-
-
+public class Person {
+    String Name, Username, Password;
+    int Age;
 
 }

@@ -11,7 +11,9 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -26,13 +28,18 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView; //Recycler View Stuff
     songAdapter adapter;
     private List<Song> songList = new ArrayList<>(); //Library
+    private List<Song> songListSearch = new ArrayList<>(); //Library
 
     MainPlayer Player;  //Media Player Class
     SeekBar seekBar;
 
-    ImageButton play, pause, play_main, pause_main, playNext, playPrev; //UI stuff
+    ImageButton play, pause, play_main, pause_main, playNext, playPrev, searchBtn; //UI stuff
     TextView songs_title, songs_artist_name, startTime, endTime;
+    EditText searchText;
+
     SlidingUpPanelLayout mLayout;
+
+    boolean Searching = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,24 +97,55 @@ public class MainActivity extends AppCompatActivity {
                 updateUI();
             }
         });
+        searchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (searchText.getVisibility() == View.INVISIBLE) {
+                    searchText.setVisibility(View.VISIBLE);
+                    Searching = true;
+                } else {
+                    searchText.setVisibility(View.INVISIBLE);
+                    Searching = false;
+                    adapter.setSongList(songList);
+                    Player.setSongList(songList);
+                    adapter.notifyDataSetChanged();
+                    searchText.setText("");
+                }
+            }
+        });
 
+        searchText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    songListSearch.clear();
+                    for (Song s : songList)
+                        if (s.getName().toLowerCase().contains(searchText.getText().toString().toLowerCase()))
+                            songListSearch.add(s);
+
+                    adapter.setSongList(songListSearch);
+                    Player.setSongList(songListSearch);
+                    adapter.notifyDataSetChanged();
+
+                    return true;
+                }
+                return false;
+            }
+        });
 
         //Seekbar in Sliding UI
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                Player.seek(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 Player.seek(seekBar.getProgress());
-
             }
         });
     }
@@ -134,6 +172,9 @@ public class MainActivity extends AppCompatActivity {
 
         endTime = findViewById(R.id.endTime);
         startTime = findViewById(R.id.StartTime);
+
+        searchBtn = findViewById(R.id.imageButtonSearch);
+        searchText = findViewById(R.id.searchText);
 
         mLayout = findViewById(R.id.activity_main);
 
@@ -204,7 +245,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateUIText() {
-        Song song = songList.get(Player.getCurrentIndex());
+        Song song;
+        if (Searching)
+            song = songListSearch.get(Player.getCurrentIndex());
+        else
+            song = songList.get(Player.getCurrentIndex());
+
 
         songs_title.setText(song.getName());
         songs_artist_name.setText(song.getArtist());
