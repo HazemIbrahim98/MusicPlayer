@@ -236,15 +236,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if(art != null)  //  hazem bos 3ala el 5ara dah w 2oly lw htshta8al :*
                     {
-                        if(art.contains(songCursor.getString(songArtist)))
-                        {
-                            found=true;
-                        }
-                        if (found != true)
-                        {
+                        if(!art.contains(songCursor.getString(songArtist)))
+
+
                             tempartist.Name = songCursor.getString(songArtist);
                             art.add(tempartist);
-                         }
+
                     }
 
                 temp.setLocation(songCursor.getString(songLocation));
