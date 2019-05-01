@@ -31,8 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Song> songListSearch = new ArrayList<>(); //Library
 
 
-    public ArrayList<Artist> art = new ArrayList<>();
-    boolean found;
+    public ArrayList<Artist> artistList = new ArrayList<>();
 
     MainPlayer Player;  //Media Player Class
     SeekBar seekBar;
@@ -226,32 +225,43 @@ public class MainActivity extends AppCompatActivity {
             //String thisArt = songCursor.getString(x);
 
             do {
-                Artist tempartist = new Artist();
                 Song temp = new Song();
+                boolean found = false;
+
                 temp.setName(songCursor.getString(songTitle));
-                temp.setArtist(songCursor.getString(songArtist));//ngyb el art f kol el song
+                String tmpArtist = songCursor.getString(songArtist);
 
-                if (art == null) {
-                    tempartist.Name = songCursor.getString(songArtist);
-                    art.add(tempartist);
-                }
-                if (art != null)  //  hazem bos 3ala el 5ara dah w 2oly lw htshta8al :*
-                {
-                    if (art.contains(songCursor.getString(songArtist))) {
-                        found = true;
-                    }
-                    if (found != true) {
-                        tempartist.Name = songCursor.getString(songArtist);
-                        art.add(tempartist);
-                    }
-                }
 
+/*
+                if (!artistList.contains(songCursor.getString(songArtist))) {
+                    tempArtist.Name = songCursor.getString(songArtist);
+                    artistList.add(tempArtist);
+                }
+*/
                 temp.setLocation(songCursor.getString(songLocation));
                 temp.setDuration(songCursor.getLong(songDuration));
                 //Trials to get the image to work....
                 //temp.setAlbumArtLocation(songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
                 //temp.setBitmap(BitmapFactory.decodeFile(thisArt));
                 //temp.setAlbumArtLocation(songCursor.getString(songIcon));
+
+
+                for(Artist s : artistList) {
+                    if (s.Name.equals(tmpArtist)) {
+                        found = true;
+                        temp.setArtist(s);
+                        s.Songs.add(temp);
+                    }
+                }
+
+                if(!found) {
+                    Artist tempArtist = new Artist();
+                    tempArtist.Name = tmpArtist;
+                    tempArtist.Songs.add(temp);
+                    artistList.add(tempArtist);
+                }
+
+
 
                 songList.add(temp);
             } while (songCursor.moveToNext());
@@ -274,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         songs_title.setText(song.getName());
-        songs_artist_name.setText(song.getArtist());
+        songs_artist_name.setText(song.getArtist().Name);
 
         long seconds = TimeUnit.MILLISECONDS.toSeconds(song.getDuration());
         long mins = TimeUnit.MILLISECONDS.toMinutes(song.getDuration());

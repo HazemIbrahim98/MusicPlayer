@@ -1,9 +1,12 @@
 package com.example.pleasework;
 
+import java.util.ArrayList;
+
 public class Song {
     private String name;
     private String location;
-    private String artist;
+//    private String artist;
+    private Artist artist;
     //private Uri albumArtUri;
     //private Bitmap bitmap;
     //private String albumArtLocation;
@@ -38,11 +41,11 @@ public class Song {
         this.location = location;
     }
 
-    public String getArtist() {
+    public Artist getArtist() {
         return artist;
     }
 
-    public void setArtist(String artist) {
+    public void setArtist(Artist artist) {
         this.artist = artist;
     }
 
