@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Song> songListSearch = new ArrayList<>(); //Library
 
 
-      public   ArrayList<Artist>art=new ArrayList<>();
+    public ArrayList<Artist> art = new ArrayList<>();
     boolean found;
 
     MainPlayer Player;  //Media Player Class
@@ -226,26 +226,25 @@ public class MainActivity extends AppCompatActivity {
             //String thisArt = songCursor.getString(x);
 
             do {
-                Artist tempartist=new Artist();
+                Artist tempartist = new Artist();
                 Song temp = new Song();
                 temp.setName(songCursor.getString(songTitle));
                 temp.setArtist(songCursor.getString(songArtist));//ngyb el art f kol el song
-                    if( art==null) {
+
+                if (art == null) {
+                    tempartist.Name = songCursor.getString(songArtist);
+                    art.add(tempartist);
+                }
+                if (art != null)  //  hazem bos 3ala el 5ara dah w 2oly lw htshta8al :*
+                {
+                    if (art.contains(songCursor.getString(songArtist))) {
+                        found = true;
+                    }
+                    if (found != true) {
                         tempartist.Name = songCursor.getString(songArtist);
                         art.add(tempartist);
                     }
-                    if(art != null)  //  hazem bos 3ala el 5ara dah w 2oly lw htshta8al :*
-                    {
-                        if(art.contains(songCursor.getString(songArtist)))
-                        {
-                            found=true;
-                        }
-                        if (found != true)
-                        {
-                            tempartist.Name = songCursor.getString(songArtist);
-                            art.add(tempartist);
-                         }
-                    }
+                }
 
                 temp.setLocation(songCursor.getString(songLocation));
                 temp.setDuration(songCursor.getLong(songDuration));
