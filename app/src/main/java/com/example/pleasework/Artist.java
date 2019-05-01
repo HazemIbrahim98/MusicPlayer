@@ -7,6 +7,8 @@ public class Artist extends Person implements SongEdit {
     String Genre;
     ArrayList<User> Followers;
 
+
+
     @Override
     public void delete() {
 
