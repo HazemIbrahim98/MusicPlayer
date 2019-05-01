@@ -246,21 +246,20 @@ public class MainActivity extends AppCompatActivity {
                 //temp.setAlbumArtLocation(songCursor.getString(songIcon));
 
 
-                for(Artist s : artistList) {
-                    if (s.Name.equals(tmpArtist)) {
+                for (Artist s : artistList) {
+                    if (s.name.equals(tmpArtist)) {
                         found = true;
                         temp.setArtist(s);
-                        s.Songs.add(temp);
+                        s.songs.add(temp);
                     }
                 }
 
-                if(!found) {
+                if (!found) {
                     Artist tempArtist = new Artist();
-                    tempArtist.Name = tmpArtist;
-                    tempArtist.Songs.add(temp);
+                    tempArtist.name = tmpArtist;
+                    tempArtist.songs.add(temp);
                     artistList.add(tempArtist);
                 }
-
 
 
                 songList.add(temp);
@@ -284,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         songs_title.setText(song.getName());
-        songs_artist_name.setText(song.getArtist().Name);
+        songs_artist_name.setText(song.getArtist().name);
 
         long seconds = TimeUnit.MILLISECONDS.toSeconds(song.getDuration());
         long mins = TimeUnit.MILLISECONDS.toMinutes(song.getDuration());

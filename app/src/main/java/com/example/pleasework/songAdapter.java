@@ -46,7 +46,7 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
     public void onBindViewHolder(@NonNull songAdapter.MyViewHolder myViewHolder, int i) {
         Song song = songList.get(i);
         myViewHolder.title.setText(song.getName());
-        myViewHolder.artist.setText(song.getArtist());
+        myViewHolder.artist.setText(song.getArtist().name);
 
         //Trials to get the image to work
         //myViewHolder.image.setImageURI(Uri.parse(song.getAlbumArtLocation()));

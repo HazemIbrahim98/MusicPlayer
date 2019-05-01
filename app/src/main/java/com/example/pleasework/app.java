@@ -5,6 +5,9 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
 
+//what is this??
+
+
 public class app extends Application {
     public static final String CHANNEL_ID = "play in notification";
 

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 public class Song {
     private String name;
     private String location;
-//    private String artist;
     private Artist artist;
     //private Uri albumArtUri;
     //private Bitmap bitmap;
@@ -56,4 +55,9 @@ public class Song {
     public void setDuration(long duration) {
         this.duration = duration;
     }
+
+    public String toString() {
+        return name + location + artist + duration;
+    }
+
 }
