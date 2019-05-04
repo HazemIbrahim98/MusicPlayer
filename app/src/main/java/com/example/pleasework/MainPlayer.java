@@ -12,6 +12,9 @@ public class MainPlayer {
     private int currentIndex;
     private SeekBar seekBar;
 
+    public MainPlayer() {
+    }
+
     public MainPlayer(List<Song> songList, SeekBar seekBar) {
 
         Player = new MediaPlayer();
@@ -19,6 +22,13 @@ public class MainPlayer {
         this.seekBar = seekBar;
         currentIndex = 0;//should get index of last time app was used
 
+    }
+
+    public MainPlayer(MainPlayer x) {
+        this.Player = x.Player;
+        this.songList = x.songList;
+        this.currentIndex = x.currentIndex;
+        this.seekBar = x.seekBar;
     }
 
     public void pauseSong() {
@@ -95,5 +105,4 @@ public class MainPlayer {
         seekBar.setProgress(0);
         seekBar.setMax((int) song.getDuration());
     }
-
 }

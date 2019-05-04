@@ -1,6 +1,5 @@
 package com.example.pleasework;
 
-import java.util.ArrayList;
 
 public class Song {
     private String name;
@@ -21,6 +20,13 @@ public class Song {
     public Song(String _name, String _loc) {
         this.name = _name;
         this.location = _loc;
+    }
+
+    public Song(Song x) {
+        this.name = x.name;
+        this.location = x.location;
+        this.artist = x.artist;
+        this.duration = x.duration;
     }
 
     //Getters & Setters
@@ -59,5 +65,4 @@ public class Song {
     public String toString() {
         return name + location + artist + duration;
     }
-
 }
